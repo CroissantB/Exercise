@@ -64,6 +64,10 @@
     button:hover {
       background-color: #6c5b7b;
     }
+
+    input[type="file"] {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -95,6 +99,12 @@
         <button onclick="increment('squats')">+1</button>
         <button onclick="decrement('squats')">-1</button>
       </div>
+    </div>
+
+    <div class="buttons">
+      <button onclick="saveProgress()">Save Progress</button>
+      <input type="file" id="file-upload" />
+      <button onclick="document.getElementById('file-upload').click()">Load Progress</button>
     </div>
   </div>
 
@@ -144,9 +154,33 @@
       }
     }
 
+    // Save progress to a file
+    function saveProgress() {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'fitness-progress.json';
+      link.click();
+    }
+
+    // Load progress from a file
+    function loadProgress(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = JSON.parse(e.target.result);
+        localStorage.setItem(localStorageKey, JSON.stringify(data));
+        updateUI();
+      };
+      reader.readAsText(file);
+    }
+
+    // Add Event Listener for File Upload
+    document.getElementById('file-upload').addEventListener('change', loadProgress);
+
     // Initialize the tracker on page load
     initialize();
   </script>
 </body>
 </html>
-
