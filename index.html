@@ -103,42 +103,55 @@
 
     <div class="buttons">
       <button onclick="saveProgress()">Save Progress</button>
-      <input type="file" id="file-upload" />
-      <button onclick="document.getElementById('file-upload').click()">Load Progress</button>
+      <button onclick="loadProgress()">Load Progress</button>
     </div>
   </div>
 
   <script>
-    const exercises = ['pushups', 'situps', 'squats'];
+    const repoURL = 'https://raw.githubusercontent.com/CroissantB/Exercise/main/data.json';
     const localStorageKey = 'fitnessTracker';
+    const exercises = ['pushups', 'situps', 'squats'];
 
     // Initialize data
-    function initialize() {
-      const storedData = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+    async function initialize() {
+      try {
+        const response = await fetch(repoURL);
+        const storedData = await response.json();
+        const today = new Date().toLocaleDateString();
 
-      const today = new Date().toLocaleDateString();
-      if (storedData.date !== today) {
-        // Reset counts if it's a new day
+        if (storedData.date !== today) {
+          // Reset counts if it's a new day
+          localStorage.setItem(
+            localStorageKey,
+            JSON.stringify({ date: today, pushups: 0, situps: 0, squats: 0 })
+          );
+        } else {
+          localStorage.setItem(localStorageKey, JSON.stringify(storedData));
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        const today = new Date().toLocaleDateString();
         localStorage.setItem(
           localStorageKey,
           JSON.stringify({ date: today, pushups: 0, situps: 0, squats: 0 })
         );
       }
+
       updateUI();
     }
 
     // Update the UI
     function updateUI() {
-      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      const data = JSON.parse(localStorage.getItem(localStorageKey)) || {};
 
       exercises.forEach(exercise => {
-        document.getElementById(`${exercise}-count`).innerText = data[exercise];
+        document.getElementById(`${exercise}-count`).innerText = data[exercise] || 0;
       });
     }
 
     // Increment count
     function increment(exercise) {
-      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      const data = JSON.parse(localStorage.getItem(localStorageKey)) || {};
       data[exercise] = (data[exercise] || 0) + 1;
       localStorage.setItem(localStorageKey, JSON.stringify(data));
       updateUI();
@@ -146,38 +159,35 @@
 
     // Decrement count
     function decrement(exercise) {
-      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      const data = JSON.parse(localStorage.getItem(localStorageKey)) || {};
       if (data[exercise] > 0) {
-        data[exercise] = (data[exercise] || 0) - 1;
+        data[exercise] -= 1;
         localStorage.setItem(localStorageKey, JSON.stringify(data));
         updateUI();
       }
     }
 
-    // Save progress to a file
+    // Save progress to a file (manual download)
     function saveProgress() {
       const data = JSON.parse(localStorage.getItem(localStorageKey));
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'fitness-progress.json';
+      link.download = 'data.json';
       link.click();
     }
 
-    // Load progress from a file
-    function loadProgress(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const data = JSON.parse(e.target.result);
+    // Load progress from repository
+    async function loadProgress() {
+      try {
+        const response = await fetch(repoURL);
+        const data = await response.json();
         localStorage.setItem(localStorageKey, JSON.stringify(data));
         updateUI();
-      };
-      reader.readAsText(file);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
     }
-
-    // Add Event Listener for File Upload
-    document.getElementById('file-upload').addEventListener('change', loadProgress);
 
     // Initialize the tracker on page load
     initialize();
