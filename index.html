@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Fitness Tracker</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #f8b195, #f67280, #c06c84);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .exercise {
+      margin: 20px 0;
+    }
+
+    .exercise h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .counter {
+      font-size: 1.2rem;
+      margin: 10px 0;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      background-color: #355c7d;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-size: 1rem;
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #6c5b7b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Fitness Tracker</h1>
+
+    <div class="exercise" id="pushups">
+      <h2>Push-ups</h2>
+      <div class="counter">Count: <span id="pushups-count">0</span></div>
+      <div class="buttons">
+        <button onclick="increment('pushups')">+1</button>
+        <button onclick="decrement('pushups')">-1</button>
+      </div>
+    </div>
+
+    <div class="exercise" id="situps">
+      <h2>Sit-ups</h2>
+      <div class="counter">Count: <span id="situps-count">0</span></div>
+      <div class="buttons">
+        <button onclick="increment('situps')">+1</button>
+        <button onclick="decrement('situps')">-1</button>
+      </div>
+    </div>
+
+    <div class="exercise" id="squats">
+      <h2>Squats</h2>
+      <div class="counter">Count: <span id="squats-count">0</span></div>
+      <div class="buttons">
+        <button onclick="increment('squats')">+1</button>
+        <button onclick="decrement('squats')">-1</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const exercises = ['pushups', 'situps', 'squats'];
+    const localStorageKey = 'fitnessTracker';
+
+    // Initialize data
+    function initialize() {
+      const storedData = JSON.parse(localStorage.getItem(localStorageKey)) || {};
+
+      const today = new Date().toLocaleDateString();
+      if (storedData.date !== today) {
+        // Reset counts if it's a new day
+        localStorage.setItem(
+          localStorageKey,
+          JSON.stringify({ date: today, pushups: 0, situps: 0, squats: 0 })
+        );
+      }
+      updateUI();
+    }
+
+    // Update the UI
+    function updateUI() {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+
+      exercises.forEach(exercise => {
+        document.getElementById(`${exercise}-count`).innerText = data[exercise];
+      });
+    }
+
+    // Increment count
+    function increment(exercise) {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      data[exercise] = (data[exercise] || 0) + 1;
+      localStorage.setItem(localStorageKey, JSON.stringify(data));
+      updateUI();
+    }
+
+    // Decrement count
+    function decrement(exercise) {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      if (data[exercise] > 0) {
+        data[exercise] = (data[exercise] || 0) - 1;
+        localStorage.setItem(localStorageKey, JSON.stringify(data));
+        updateUI();
+      }
+    }
+
+    // Initialize the tracker on page load
+    initialize();
+  </script>
+</body>
+</html>
 
